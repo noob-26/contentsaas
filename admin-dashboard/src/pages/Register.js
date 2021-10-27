@@ -1,4 +1,6 @@
+/* eslint-disable linebreak-style */
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -10,14 +12,65 @@ import {
   FormHelperText,
   Link,
   TextField,
-  Typography
+  Typography,
+  Snackbar,
+  Alert,
 } from '@material-ui/core';
+import { auth } from '../Firebase/index';
 
 const Register = () => {
   const navigate = useNavigate();
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [check, setCheck] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [errorMessage, seterrorMessage] = useState('');
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const register = (event) => {
+    console.log('Signing you in');
+    event.preventDefault();
+    auth
+      .createUserWithEmailAndPassword(email, password)
+      .then((result) => {
+        const { user } = result;
+        // Profile Picture being set by default
+        user
+          .updateProfile({
+            photoURL:
+            'https://kittyinpink.co.uk/wp-content/uploads/2016/12/facebook-default-photo-male_1-1.jpg',
+            displayName:
+            `${firstname} ${lastname}`,
+          })
+          .then(() => {
+            window.location.href = '/login';
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((error) => {
+        seterrorMessage(error.message);
+        console.log(errorMessage);
+        setOpen(true);
+      });
+  };
 
   return (
     <>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+      ;
       <Helmet>
         <title>Register | Material Kit</title>
       </Helmet>
@@ -39,34 +92,28 @@ const Register = () => {
               password: '',
               policy: false
             }}
-            validationSchema={
-            Yup.object().shape({
-              email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-              firstName: Yup.string().max(255).required('First name is required'),
+            validationSchema={Yup.object().shape({
+              email: Yup.string()
+                .email('Must be a valid email')
+                .max(255)
+                .required('Email is required'),
+              firstName: Yup.string()
+                .max(255)
+                .required('First name is required'),
               lastName: Yup.string().max(255).required('Last name is required'),
               password: Yup.string().max(255).required('password is required'),
               policy: Yup.boolean().oneOf([true], 'This field must be checked')
-            })
-          }
+            })}
             onSubmit={() => {
               navigate('/app/dashboard', { replace: true });
             }}
           >
             {({
-              errors,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-              isSubmitting,
-              touched,
-              values
+              errors, handleSubmit, isSubmitting, touched
             }) => (
               <form onSubmit={handleSubmit}>
                 <Box sx={{ mb: 3 }}>
-                  <Typography
-                    color="textPrimary"
-                    variant="h2"
-                  >
+                  <Typography color="textPrimary" variant="h2">
                     Create new account
                   </Typography>
                   <Typography
@@ -84,9 +131,9 @@ const Register = () => {
                   label="First name"
                   margin="normal"
                   name="firstName"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  value={values.firstName}
+                  onBlur={(e) => setFirstname(e.target.value)}
+                  onChange={(e) => setFirstname(e.target.value)}
+                  value={firstname}
                   variant="outlined"
                 />
                 <TextField
@@ -96,9 +143,9 @@ const Register = () => {
                   label="Last name"
                   margin="normal"
                   name="lastName"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  value={values.lastName}
+                  onBlur={(e) => setLastname(e.target.value)}
+                  onChange={(e) => setLastname(e.target.value)}
+                  value={lastname}
                   variant="outlined"
                 />
                 <TextField
@@ -108,10 +155,10 @@ const Register = () => {
                   label="Email Address"
                   margin="normal"
                   name="email"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
+                  onBlur={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   type="email"
-                  value={values.email}
+                  value={email}
                   variant="outlined"
                 />
                 <TextField
@@ -121,10 +168,10 @@ const Register = () => {
                   label="Password"
                   margin="normal"
                   name="password"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
+                  onBlur={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   type="password"
-                  value={values.password}
+                  value={password}
                   variant="outlined"
                 />
                 <Box
@@ -135,14 +182,11 @@ const Register = () => {
                   }}
                 >
                   <Checkbox
-                    checked={values.policy}
+                    checked={check}
                     name="policy"
-                    onChange={handleChange}
+                    onChange={() => setCheck(!check)}
                   />
-                  <Typography
-                    color="textSecondary"
-                    variant="body1"
-                  >
+                  <Typography color="textSecondary" variant="body1">
                     I have read the
                     {' '}
                     <Link
@@ -157,29 +201,30 @@ const Register = () => {
                   </Typography>
                 </Box>
                 {Boolean(touched.policy && errors.policy) && (
-                <FormHelperText error>
-                  {errors.policy}
-                </FormHelperText>
+                  <FormHelperText error>{errors.policy}</FormHelperText>
                 )}
                 <Box sx={{ py: 2 }}>
                   <Button
                     color="primary"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !check}
                     fullWidth
                     size="large"
                     type="submit"
                     variant="contained"
+                    onClick={register}
                   >
                     Sign up now
                   </Button>
                 </Box>
-                <Typography
-                  color="textSecondary"
-                  variant="body1"
-                >
+                <Typography color="textSecondary" variant="body1">
                   Have an account?
                   {' '}
-                  <Link component={RouterLink} to="/login" variant="h6" underline="hover">
+                  <Link
+                    component={RouterLink}
+                    to="/login"
+                    variant="h6"
+                    underline="hover"
+                  >
                     Sign in
                   </Link>
                 </Typography>

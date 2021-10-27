@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 const Logo = (props) => (
   <img
     alt="Logo"

@@ -6,10 +6,11 @@ const cors = require('cors');
 
 // Route Files
 const main = require('./routes/main');
-
+const detailsRouter = require('./routes/userdetails');
 
 // DB Connection
 const db = require('./config/keys').MongoURI;
+const { route } = require('./routes/main');
 // Connect MongoDB
 mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
     .then( () => console.log('MongoDB Connected'.green.bold) )
@@ -23,7 +24,7 @@ app.use(express.json());
 
 // Routing for API Service
 app.use('/api/v1/main', main);
-
+app.use("/api/v1/", detailsRouter);
 
 const PORT = process.env.PORT || 5000;
 

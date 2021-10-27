@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { styled } from '@material-ui/core/styles';
 import DashboardNavbar from './DashboardNavbar';
 import DashboardSidebar from './DashboardSidebar';
+
+let name = '';
 
 const DashboardLayoutRoot = styled('div')(
   ({ theme }) => ({
@@ -40,11 +42,15 @@ const DashboardLayoutContent = styled('div')({
 
 const DashboardLayout = () => {
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
+  if (useLocation().state) {
+    name = (useLocation().state.name);
+  }
 
   return (
     <DashboardLayoutRoot>
       <DashboardNavbar onMobileNavOpen={() => setMobileNavOpen(true)} />
       <DashboardSidebar
+        props={name}
         onMobileClose={() => setMobileNavOpen(false)}
         openMobile={isMobileNavOpen}
       />
