@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -53,8 +54,10 @@ const items = [
   }
 ];
 
-const DashboardSidebar = ({ onMobileClose, openMobile }) => {
+// eslint-disable-next-line react/prop-types
+const DashboardSidebar = ({ onMobileClose, openMobile, props }) => {
   const location = useLocation();
+  console.log(props);
 
   useEffect(() => {
     if (openMobile && onMobileClose) {
@@ -92,7 +95,7 @@ const DashboardSidebar = ({ onMobileClose, openMobile }) => {
           color="textPrimary"
           variant="h5"
         >
-          {user.name}
+          {props || ''}
         </Typography>
         <Typography
           color="textSecondary"

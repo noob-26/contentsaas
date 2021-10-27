@@ -1,4 +1,6 @@
+/* eslint-disable linebreak-style */
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -6,19 +8,53 @@ import {
   Box,
   Button,
   Container,
-  Grid,
   Link,
   TextField,
-  Typography
+  Typography,
+  Snackbar,
+  Alert
 } from '@material-ui/core';
-import FacebookIcon from '../icons/Facebook';
-import GoogleIcon from '../icons/Google';
+import { auth } from '../Firebase/index';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [open, setOpen] = useState(false);
+  const [errorMessage, seterrorMessage] = useState('');
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const login = (event) => {
+    console.log('Signing in...');
+    event.preventDefault();
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Signed in
+        // console.log(userCredential.user.displayName);
+        navigate('/app/dashboard', { state: { name: userCredential.user.displayName } });
+      })
+      .catch((error) => {
+        console.log(error.message);
+        seterrorMessage(error.message);
+        setOpen(true);
+      });
+  };
 
   return (
     <>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
       <Helmet>
         <title>Login | Material Kit</title>
       </Helmet>
@@ -38,28 +74,19 @@ const Login = () => {
               password: 'Password123'
             }}
             validationSchema={Yup.object().shape({
-              email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+              email: Yup.string()
+                .email('Must be a valid email')
+                .max(255)
+                .required('Email is required'),
               password: Yup.string().max(255).required('Password is required')
             })}
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
-            }}
           >
             {({
-              errors,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-              isSubmitting,
-              touched,
-              values
+              errors, isSubmitting, touched
             }) => (
-              <form onSubmit={handleSubmit}>
+              <form>
                 <Box sx={{ mb: 3 }}>
-                  <Typography
-                    color="textPrimary"
-                    variant="h2"
-                  >
+                  <Typography color="textPrimary" variant="h2">
                     Sign in
                   </Typography>
                   <Typography
@@ -70,56 +97,6 @@ const Login = () => {
                     Sign in on the internal platform
                   </Typography>
                 </Box>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
-                  >
-                    <Button
-                      color="primary"
-                      fullWidth
-                      startIcon={<FacebookIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login with Facebook
-                    </Button>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
-                  >
-                    <Button
-                      fullWidth
-                      startIcon={<GoogleIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login with Google
-                    </Button>
-                  </Grid>
-                </Grid>
-                <Box
-                  sx={{
-                    pb: 1,
-                    pt: 3
-                  }}
-                >
-                  <Typography
-                    align="center"
-                    color="textSecondary"
-                    variant="body1"
-                  >
-                    or login with email address
-                  </Typography>
-                </Box>
                 <TextField
                   error={Boolean(touched.email && errors.email)}
                   fullWidth
@@ -127,10 +104,14 @@ const Login = () => {
                   label="Email Address"
                   margin="normal"
                   name="email"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
+                  onBlur={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
                   type="email"
-                  value={values.email}
+                  value={email}
                   variant="outlined"
                 />
                 <TextField
@@ -140,10 +121,14 @@ const Login = () => {
                   label="Password"
                   margin="normal"
                   name="password"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
+                  onBlur={(e) => {
+                    setPassword(e.target.value);
+                  }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                   type="password"
-                  value={values.password}
+                  value={password}
                   variant="outlined"
                 />
                 <Box sx={{ py: 2 }}>
@@ -154,17 +139,20 @@ const Login = () => {
                     size="large"
                     type="submit"
                     variant="contained"
+                    onClick={login}
                   >
                     Sign in now
                   </Button>
                 </Box>
-                <Typography
-                  color="textSecondary"
-                  variant="body1"
-                >
+                <Typography color="textSecondary" variant="body1">
                   Don&apos;t have an account?
                   {' '}
-                  <Link component={RouterLink} to="/register" variant="h6" underline="hover">
+                  <Link
+                    component={RouterLink}
+                    to="/register"
+                    variant="h6"
+                    underline="hover"
+                  >
                     Sign up
                   </Link>
                 </Typography>
