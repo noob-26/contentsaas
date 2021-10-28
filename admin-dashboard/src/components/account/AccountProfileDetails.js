@@ -1,5 +1,5 @@
 /* eslint-disable linebreak-style */
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
 } from '@material-ui/core';
 
 import { FilePond } from 'react-filepond';
+import UserContext from '../UserContext';
 import 'filepond/dist/filepond.min.css';
 
 const states = [
@@ -46,12 +47,73 @@ const AccountProfileDetails = (props) => {
     blog: '',
     video: '',
     bio: '',
+    firebaseEmail: '',
     files: []
   });
   const [files, setFiles] = useState([]);
   const [message, setMessage] = useState('');
-  const [color, setColor] = useState('');
+  const [color, setColor] = useState('success');
   const [open, setOpen] = useState(false);
+  const userData = useContext(UserContext);
+  values.firebaseEmail = userData.email;
+
+  // Loads data from DB on startup
+  useEffect(() => {
+    if (!userData.email) {
+      setValues({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        state: '',
+        country: '',
+        twitter: '',
+        linkedin: '',
+        instagram: '',
+        youtube: '',
+        blog: '',
+        video: '',
+        bio: '',
+        firebaseEmail: '',
+        files: []
+      });
+    } else {
+      const url = 'http://localhost:5000/api/v1/getdetails';
+      const reqobj = { firebaseEmail: userData.email };
+      fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reqobj)
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          const obj = {
+            firstName: res[0].firstName,
+            lastName: res[0].lastName,
+            email: res[0].email,
+            phone: res[0].phone,
+            state: res[0].state,
+            country: res[0].country,
+            twitter: res[0].twitter,
+            linkedin: res[0].linkedin,
+            instagram: res[0].instagram,
+            youtube: res[0].youtube,
+            blog: res[0].blog,
+            video: res[0].video,
+            bio: res[0].bio,
+            firebaseEmail: res[0].firebaseEmail,
+            files: []
+          };
+          setValues(obj);
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+    }
+  }, [userData.firebaseEmail]);
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -68,31 +130,70 @@ const AccountProfileDetails = (props) => {
     });
   };
 
+  values.firebaseEmail = userData.email;
+
+  const getUser = async () => {
+    console.log('Getting...');
+    const url = 'http://localhost:5000/api/v1/getdetails';
+    const reqobj = { firebaseEmail: userData.email };
+    const data = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(reqobj)
+    });
+    const newData = await data.json();
+    if (newData.length === 0) {
+      return false;
+    }
+    return true;
+  };
+
   const sendFormData = async (e) => {
     console.log('Sending data...');
     e.preventDefault();
-    e.innerText = 'SAVING..';
-    const url = 'http://localhost:5000/api/v1/details';
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(values)
-      });
-      const data = await response.json();
-      console.log(data);
-      setMessage(data.message);
-      setColor('success');
-      e.innerText = 'Save details';
-      setOpen(true);
-    } catch (err) {
-      console.log(err.message);
-      setMessage(err.message);
-      setColor('error');
-      setOpen(true);
+    const exists = await getUser();
+
+    if (exists) {
+      try {
+        const data = await fetch('http://localhost:5000/api/v1/updatedetails', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(values)
+        });
+        const newData = await data.json();
+        setOpen(true);
+        setMessage(newData.message);
+        setColor('success');
+      } catch (err) {
+        setOpen(true);
+        setMessage(err.message);
+        setColor('error');
+      }
+    } else {
+      try {
+        const data = await fetch('http://localhost:5000/api/v1/details', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(values)
+        });
+        const newData = await data.json();
+        setOpen(true);
+        setMessage(newData.message);
+        setColor('success');
+      } catch (err) {
+        setOpen(true);
+        setMessage(err.message);
+        setColor('error');
+      }
     }
   };
 

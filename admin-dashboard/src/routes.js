@@ -9,6 +9,7 @@ import NotFound from './pages/NotFound';
 import ProductList from './pages/ProductList';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
+import Content from './pages/Content';
 
 const routes = [
   {
@@ -20,6 +21,7 @@ const routes = [
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'products', element: <ProductList /> },
       { path: 'settings', element: <Settings /> },
+      { path: 'content', element: <Content /> },
       { path: '*', element: <Navigate to="/404" /> }
     ]
   },

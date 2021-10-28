@@ -39,7 +39,7 @@ const Login = () => {
       .then((userCredential) => {
         // Signed in
         // console.log(userCredential.user.displayName);
-        navigate('/app/dashboard', { state: { name: userCredential.user.displayName } });
+        navigate('/app/dashboard', { state: { name: userCredential.user.displayName, email: userCredential.user.email } });
       })
       .catch((error) => {
         console.log(error.message);

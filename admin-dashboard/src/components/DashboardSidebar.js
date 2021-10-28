@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
@@ -16,9 +16,11 @@ import {
   Settings as SettingsIcon,
   // ShoppingBag as ShoppingBagIcon,
   User as UserIcon,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Book as BookIcon
 } from 'react-feather';
 import NavItem from './NavItem';
+import UserContext from './UserContext';
 
 const user = {
   avatar: '',
@@ -48,6 +50,11 @@ const items = [
     title: 'Page'
   },
   {
+    href: '/app/content',
+    icon: BookIcon,
+    title: 'Content'
+  },
+  {
     href: '/app/settings',
     icon: SettingsIcon,
     title: 'Settings'
@@ -55,9 +62,9 @@ const items = [
 ];
 
 // eslint-disable-next-line react/prop-types
-const DashboardSidebar = ({ onMobileClose, openMobile, props }) => {
+const DashboardSidebar = ({ onMobileClose, openMobile }) => {
   const location = useLocation();
-  console.log(props);
+  const data = useContext(UserContext);
 
   useEffect(() => {
     if (openMobile && onMobileClose) {
@@ -95,7 +102,7 @@ const DashboardSidebar = ({ onMobileClose, openMobile, props }) => {
           color="textPrimary"
           variant="h5"
         >
-          {props || ''}
+          {data.name || ''}
         </Typography>
         <Typography
           color="textSecondary"

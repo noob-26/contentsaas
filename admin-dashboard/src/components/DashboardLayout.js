@@ -3,8 +3,10 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { styled } from '@material-ui/core/styles';
 import DashboardNavbar from './DashboardNavbar';
 import DashboardSidebar from './DashboardSidebar';
+import UserContext from './UserContext';
 
 let name = '';
+let email = '';
 
 const DashboardLayoutRoot = styled('div')(
   ({ theme }) => ({
@@ -44,24 +46,28 @@ const DashboardLayout = () => {
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
   if (useLocation().state) {
     name = (useLocation().state.name);
+    email = (useLocation().state.email);
+    console.log(name);
+    console.log(email);
   }
 
   return (
-    <DashboardLayoutRoot>
-      <DashboardNavbar onMobileNavOpen={() => setMobileNavOpen(true)} />
-      <DashboardSidebar
-        props={name}
-        onMobileClose={() => setMobileNavOpen(false)}
-        openMobile={isMobileNavOpen}
-      />
-      <DashboardLayoutWrapper>
-        <DashboardLayoutContainer>
-          <DashboardLayoutContent>
-            <Outlet />
-          </DashboardLayoutContent>
-        </DashboardLayoutContainer>
-      </DashboardLayoutWrapper>
-    </DashboardLayoutRoot>
+    <UserContext.Provider value={{ name, email }}>
+      <DashboardLayoutRoot>
+        <DashboardNavbar onMobileNavOpen={() => setMobileNavOpen(true)} />
+        <DashboardSidebar
+          onMobileClose={() => setMobileNavOpen(false)}
+          openMobile={isMobileNavOpen}
+        />
+        <DashboardLayoutWrapper>
+          <DashboardLayoutContainer>
+            <DashboardLayoutContent>
+              <Outlet />
+            </DashboardLayoutContent>
+          </DashboardLayoutContainer>
+        </DashboardLayoutWrapper>
+      </DashboardLayoutRoot>
+    </UserContext.Provider>
   );
 };
 

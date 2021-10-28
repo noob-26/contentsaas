@@ -28,6 +28,10 @@ const UserDetails = new mongoose.Schema({
   linkedin: String,
   blog: String,
   video: String,
+  firebaseEmail: {
+    type: String,
+    required: true
+  }
 });
 
 //Model
